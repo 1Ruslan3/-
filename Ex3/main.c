@@ -11,7 +11,7 @@ enum StatusCode find_substring_in_files(const char* substring, int num_files, ..
 
 int main()
 {
-    enum StatusCode Status = find_substring_in_files("example", 2, "file1.txt", "file2.txt");
+    enum StatusCode Status = find_substring_in_files("aaaaaa", 1, "file1.txt");
     if (Status == INCORRECTED_READ_FILE) {
         printf("Incorrected Error: invalid read file");
         return 1;

@@ -1,121 +1,85 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
 
-enum StatusCode {
-    OK = 0,
-    MEMORY_ERROR = -1,
-    INVALID_COUNT_ERROR = 1
+#define DELIMITERS " .,:;?\n\t" /* символы-разделители */
+#define N 1024
 
-};
+ void Init(int* flag, const char* s)/* инициализация массива flag размера 256 */
+{
 
-enum StatusCode appendNumber(int syst, char** number1, const char* number2);
-enum StatusCode sumNumbers(char** result, int syst, int count, ...);
+	int i;
 
-int main(int argc, const char* argv[]) {
-    char* result = NULL;
-    switch (sumNumbers(&result, 16, 3, "9A4", "444", "1B2D")) {
-    case OK:
-        printf("%s\n", result);
-        free(result);
-        return 2;
-    case MEMORY_ERROR:
-        return -2;
-        break;
-    case INVALID_COUNT_ERROR:
-        return 3;
-        break;
+	for (i = 0; i < 256; i++) flag[i] = 0;
 
-    }
+	for (i = 0; s[i]; i++) flag[s[i]] = 1;
 
-
-    return 0;
 }
 
-enum StatusCode sumNumbers(char** result, int syst, int count, ...) {
-    if (count == 0) {
-        return INVALID_COUNT_ERROR;
-    }
+/* разбиение строки на слова: */
 
-    va_list ap;
-    va_start(ap, count);
+char* my_strtok2(char* s, const int* flag)
+{
 
-    *result = strdup(va_arg(ap, char*)); // dublicate string
+	static char* beg = NULL; 
+	char* pstr, * pword = NULL; 
+	int len;
 
-    if (*result == NULL) {
-        return MEMORY_ERROR;
-    }
+	if (s != NULL)
+	{
 
-    for (int i = 1; i < count; i++)
-    {
-        if (appendNumber(syst, result, va_arg(ap, char*)) != OK) {
-            va_end(ap);
-            return MEMORY_ERROR;
-        }
-    }
+		for (pstr = s; *pstr && flag[*pstr]; ++pstr);
 
-    va_end(ap);
-    return OK;
+		beg = pstr;
+
+	}else	pstr = beg;
+
+	for (; *beg && !flag[*beg]; ++beg);
+
+	if (*pstr)
+	{
+
+		pword = (char*)malloc(beg - pstr + 1); 
+		if (pword != NULL)
+		{
+
+			len = (beg - pstr) / sizeof(char); 
+			strncpy(pword, pstr, len);
+			pword[len] = '\0'; 
+
+		}
+
+	}
+
+	for (; *beg && flag[*beg]; ++beg);
+
+	return pword;
+
 }
 
-enum StatusCode appendNumber(int syst, char** number1, const char* number2) {
+int main()
+{
 
-    size_t len1 = strlen(*number1), len2 = strlen(number2);
-    size_t currentLen = (len1 >= len2 ? len1 : len2) + 2;
+	char s[N], * word; 
+	int flag[256]; 
+	fgets(s, N, stdin);
 
-    const char* n1Ptr = *number1 + len1 - 1;
-    const char* n2Ptr = number2 + len2 - 1;
-
-    char* result = (char*)calloc(currentLen, sizeof(char));
-
-    if (result == NULL) {
-        return MEMORY_ERROR;
-    }
-
-    char* resultPtr = result + currentLen - 1;
-
-    int stepsMemory = 0;
-
-    while (n1Ptr != (*number1) - 1 || n2Ptr != number2 - 1) {
-
-        int n1Val = (n1Ptr != (*number1) - 1) ? ((*n1Ptr >= 'A') ? toupper(*n1Ptr) - 'A' + 10 : *n1Ptr - '0') : 0;
-
-        int n2Val = (n2Ptr != number2 - 1) ? ((*n2Ptr >= 'A') ? toupper(*n2Ptr) - 'A' + 10 : *n2Ptr - '0') : 0;
-
-        if (n1Ptr != (*number1) - 1) { n1Ptr--; }
-        if (n2Ptr != number2 - 1) { n2Ptr--; }
+	Init(flag, DELIMITERS);/* инициализируем массив flag: */
 
 
-        int currVal = n1Val + n2Val + stepsMemory;
-        stepsMemory = currVal / syst;
-        currVal %= syst;
-        if (currVal < 10) {
-            *resultPtr-- = (char)currVal + '0';
-        }
-        else {
-            *resultPtr-- = (char)currVal - 10 + 'A';
-        }
+	word = my_strtok2(s, flag); 
+	while (word != NULL)/* разбиваем строку на слова: */
+	{
 
-    }
+		puts(word);
 
-    if (stepsMemory != 0)
+		free(word);
 
-        if (stepsMemory < 10) {
-            *resultPtr-- = (char)stepsMemory + '0';
-        }
-        else {
-            *resultPtr-- = (char)stepsMemory - 10 + 'A';
-        }
+		word = my_strtok2(NULL, flag);
 
-    free(*number1);
-    *number1 = strdup(resultPtr + 1);
-    if (!*number1) {
-        free(result);
-        return MEMORY_ERROR;
-    }
+	}
 
-    free(result);
-    return OK;
+	return 0;
+
 }
+
