@@ -114,7 +114,7 @@ int main() {
     printList(head);
     printf("%d\n", searchElement(head, 7));
 
-    delete(&head, 3);
+    delete(&head, 1);
 
     printList(head);
 
