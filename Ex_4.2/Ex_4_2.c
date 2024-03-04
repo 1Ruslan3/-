@@ -136,7 +136,7 @@ int aggregate_by(bl const* from, int (*predicate)(tvalue const* value), tvalue a
     return 0;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	
     bl* start = create();
@@ -145,15 +145,28 @@ int main()
         return 1;
     }
     tvalue result = 0;
+
+    FILE* fon = fopen(argv[1], "r");
+    if (fon == NULL)
+    {
+        return 2;
+    }
+    int t;
+
+    while (feof(fon) == 0) 
+    {
+        fscanf(fon, "%d", &t);
+        pushBack(start, t);
+    }
    
-    pushBack(start, 1);
-    pushBack(start, 2);
-    pushBack(start, 3);
-    pushBack(start, 4);
-    pushBack(start, 5);
-    pushBack(start, 6);
 
     int x = aggregate_by(start, pred, 0, foo, &result);
+    FILE* foff = fopen(argv[2], "w");
+    if (foff == NULL)
+    {
+        return 3;
+    }
+    fprintf(foff, "%d", result);
 
     printf("%d\n", x);
     printf("%d", result);
